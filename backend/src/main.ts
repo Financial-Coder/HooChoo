@@ -22,7 +22,11 @@ async function bootstrap() {
 
   // CORS 설정: 프론트엔드에서의 요청 허용
   app.enableCors({
-    origin: ['http://localhost:3001', 'http://localhost:3000'],
+    origin: [
+      'http://localhost:3001',
+      'http://localhost:3000',
+      'https://hoo-choo-1f18.vercel.app',
+    ],
     credentials: true,
   });
 
