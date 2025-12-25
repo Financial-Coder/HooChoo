@@ -24,16 +24,13 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // 정적 파일 서빙 (uploads 폴더) - 개발 환경에서만
-  // Railway에서는 S3를 사용하므로 로컬 파일 서빙 불필요
-  if (process.env.NODE_ENV !== 'production') {
-    try {
-      app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), {
-        prefix: '/uploads/',
-      });
-    } catch (error) {
-      console.warn('Failed to setup static assets:', error);
-    }
+  // 정적 파일 서빙 (uploads 폴더)
+  try {
+    app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), {
+      prefix: '/uploads/',
+    });
+  } catch (error) {
+    console.warn('Failed to setup static assets:', error);
   }
 
   app.useGlobalPipes(
