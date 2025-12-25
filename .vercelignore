@@ -1,0 +1,6 @@
+backend
+backend/**
+uploads
+uploads/**
+*.log
+.DS_Store
