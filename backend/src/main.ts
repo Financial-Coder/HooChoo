@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { join } from 'path';
+import * as express from 'express';
 
 // BigInt를 JSON으로 직렬화할 수 있도록 설정
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -16,9 +17,9 @@ async function bootstrap() {
   });
 
   // Configure body parsers with size limits
-  app.use(require('express').json({ limit: '100mb' }));
-  app.use(require('express').urlencoded({ extended: true, limit: '100mb' }));
-  app.use(require('express').raw({ limit: '100mb' }));
+  app.use(express.json({ limit: '100mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '100mb' }));
+  app.use(express.raw({ limit: '100mb' }));
 
   // CORS 설정: 프론트엔드에서의 요청 허용
   app.enableCors({
