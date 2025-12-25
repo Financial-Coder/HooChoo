@@ -26,6 +26,7 @@ async function bootstrap() {
       'http://localhost:3001',
       'http://localhost:3000',
       'https://hoo-choo-1f18.vercel.app',
+      'https://hoo-choo.vercel.app', // 프로덕션 Vercel URL
     ],
     credentials: true,
   });
