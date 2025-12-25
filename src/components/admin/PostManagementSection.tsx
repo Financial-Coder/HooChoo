@@ -90,6 +90,7 @@ export default function PostManagementSection() {
                                 <span>❤️ {post._count.likes} 💬 {post._count.comments}</span>
                             </div>
                             <Button
+                                type="button"
                                 onClick={() => handleDelete(post.id)}
                                 disabled={deleting === post.id}
                                 className="w-full bg-destructive hover:opacity-90 text-destructive-foreground transition-opacity"

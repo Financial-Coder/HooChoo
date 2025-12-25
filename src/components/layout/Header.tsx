@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { logout, getUser } from '@/lib/auth';
 import { User } from '@/lib/types';
 
@@ -22,10 +23,10 @@ export default function Header() {
         <header className="sticky top-0 z-50 bg-card border-b border-border shadow-sm">
             <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
                 {/* 로고 */}
-                <a href="/feed" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <Link href="/feed" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                     <span className="text-2xl">🐾</span>
                     <h1 className="text-xl font-bold text-foreground">HooChoo</h1>
-                </a>
+                </Link>
 
                 {/* 우측 메뉴 */}
                 <div className="flex items-center gap-4">
@@ -42,15 +43,16 @@ export default function Header() {
                             </div>
 
                             {user.role === 'ADMIN' && (
-                                <a
+                                <Link
                                     href="/admin"
                                     className="text-sm px-3 py-1.5 bg-secondary text-secondary-foreground rounded-md hover:opacity-90 transition-opacity font-medium"
                                 >
                                     관리자
-                                </a>
+                                </Link>
                             )}
 
                             <button
+                                type="button"
                                 onClick={handleLogout}
                                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                             >
