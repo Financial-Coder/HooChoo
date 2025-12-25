@@ -21,7 +21,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "create-admin": "ts-node scripts/create-admin.ts"
+    "create-admin": "ts-node scripts/create-admin.ts",
+    "seed-admin": "ts-node scripts/seed-admin.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
