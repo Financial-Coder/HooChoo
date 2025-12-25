@@ -19,7 +19,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   async login(dto: LoginDto): Promise<AuthResponse> {
     const user = await this.prisma.user.findUnique({
@@ -116,5 +116,48 @@ export class AuthService {
       role: user.role,
       avatarUrl: user.avatarUrl,
     };
+  }
+
+  /**
+   * TEMPORARY: Bootstrap the first admin user
+   * This should be removed after the first admin is created
+   */
+  async bootstrapAdmin(dto: {
+    name: string;
+    email: string;
+    password: string;
+  }): Promise<AuthResponse> {
+    // Check if any admin already exists
+    const existingAdmin = await this.prisma.user.findFirst({
+      where: { role: 'ADMIN' },
+    });
+
+    if (existingAdmin) {
+      throw new BadRequestException('Admin 계정이 이미 존재합니다.');
+    }
+
+    // Check if email already exists
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: dto.email.toLowerCase() },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException('이미 존재하는 이메일입니다.');
+    }
+
+    // Hash password
+    const passwordHash = await argon2.hash(dto.password);
+
+    // Create admin user
+    const admin = await this.prisma.user.create({
+      data: {
+        name: dto.name,
+        email: dto.email.toLowerCase(),
+        passwordHash,
+        role: 'ADMIN',
+      },
+    });
+
+    return this.buildAuthResponse(admin);
   }
 }
