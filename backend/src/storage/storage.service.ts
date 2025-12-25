@@ -19,6 +19,10 @@ export class StorageService {
         width: number;
         height: number;
     }> {
+        // 디렉토리가 존재하지 않으면 생성
+        await fs.mkdir(this.originalsDir, { recursive: true });
+        await fs.mkdir(this.thumbnailsDir, { recursive: true });
+
         const fileExt = path.extname(file.originalname);
         const filename = `${randomUUID()}${fileExt}`;
 
