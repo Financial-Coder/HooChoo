@@ -3,7 +3,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { join } from 'path';
-import * as express from 'express';
 
 // BigInt를 JSON으로 직렬화할 수 있도록 설정
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -12,14 +11,7 @@ import * as express from 'express';
 };
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    bodyParser: false, // disable default body parser
-  });
-
-  // Configure body parsers with size limits
-  app.use(express.json({ limit: '100mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '100mb' }));
-  app.use(express.raw({ limit: '100mb' }));
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // CORS 설정: 프론트엔드에서의 요청 허용
   app.enableCors({
@@ -32,11 +24,17 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // 정적 파일 서빙 (uploads 폴더)
-  // __dirname은 dist/src를 가리키므로 ../../uploads를 사용
-  app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), {
-    prefix: '/uploads/',
-  });
+  // 정적 파일 서빙 (uploads 폴더) - 개발 환경에서만
+  // Railway에서는 S3를 사용하므로 로컬 파일 서빙 불필요
+  if (process.env.NODE_ENV !== 'production') {
+    try {
+      app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), {
+        prefix: '/uploads/',
+      });
+    } catch (error) {
+      console.warn('Failed to setup static assets:', error);
+    }
+  }
 
   app.useGlobalPipes(
     new ValidationPipe({
