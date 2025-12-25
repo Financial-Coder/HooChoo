@@ -1,0 +1,12 @@
+[2025-12-23]
+- nvm 0.39.7 설치 및 Node.js LTS(v24.12.0) 구성
+- npm v11.6.2 확인 및 create-next-app 실행
+- Next.js 16.1.1 + React 19 + Tailwind 4 기본 템플릿 설치
+- npm run lint 실행 (결과: 성공)
+- backend 디렉터리 생성 및 NestJS 11 기본 프로젝트 세팅
+- Prisma 설치/초기화, schema 정의, 실행 스크립트 추가
+- backend 환경설정 가이드 및 .env.example 작성
+- NestJS Auth/Invitation 모듈 구축, JWT/Prisma 연동 및 ESLint 통과
+- Posts/Comments/Likes 모듈 구현 완료
+- API 테스트 스크립트 및 가이드 작성
+- 타입 오류 수정 (JWT, Prisma, Express Request 확장)
