@@ -44,7 +44,7 @@ enum ActivityType {
 model User {
   id              String        @id @default(uuid())
   name            String        @db.VarChar(80)
-  email           String        @unique @db.Citext
+  email           String        @unique
   role            Role          @default(MEMBER)
   passwordHash    String
   avatarUrl       String?
@@ -62,7 +62,7 @@ model User {
 model Invitation {
   id              String   @id @default(uuid())
   code            String   @unique
-  email           String?  @db.Citext
+  email           String?
   role            Role     @default(MEMBER)
   expiresAt       DateTime?
   createdAt       DateTime @default(now())
