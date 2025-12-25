@@ -18,7 +18,8 @@ export default function FeedCard({ post }: FeedCardProps) {
     // 백엔드 URL 생성 (상대 경로를 절대 경로로 변환)
     const getImageUrl = (url: string) => {
         if (url.startsWith('http')) return url;
-        return `http://localhost:3000${url}`;
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        return `${baseUrl}${url}`;
     };
 
     const handleLike = async () => {

@@ -46,7 +46,8 @@ export default function PostManagementSection() {
 
     const getImageUrl = (url: string) => {
         if (url.startsWith('http')) return url;
-        return `http://localhost:3000${url}`;
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        return `${baseUrl}${url}`;
     };
 
     if (loading) {
