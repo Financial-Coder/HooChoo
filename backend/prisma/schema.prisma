@@ -1,0 +1,146 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum MediaStatus {
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum StorageProvider {
+  AWS_S3
+}
+
+enum ActivityType {
+  LOGIN
+  UPLOAD
+  COMMENT
+  LIKE
+  INVITE
+}
+
+model User {
+  id              String        @id @default(uuid())
+  name            String        @db.VarChar(80)
+  email           String        @unique @db.Citext
+  role            Role          @default(MEMBER)
+  passwordHash    String
+  avatarUrl       String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  lastLoginAt     DateTime?
+  posts           Post[]
+  comments        Comment[]
+  likes           Like[]
+  invitations     Invitation[]  @relation("CreatorInvites")
+  acceptedInvites Invitation[]  @relation("AcceptedUser")
+  activities      ActivityLog[] @relation("ActorActivities")
+}
+
+model Invitation {
+  id              String   @id @default(uuid())
+  code            String   @unique
+  email           String?  @db.Citext
+  role            Role     @default(MEMBER)
+  expiresAt       DateTime?
+  createdAt       DateTime @default(now())
+  createdById     String
+  createdBy       User     @relation("CreatorInvites", fields: [createdById], references: [id])
+  acceptedUserId  String?
+  acceptedUser    User?    @relation("AcceptedUser", fields: [acceptedUserId], references: [id])
+}
+
+model MediaAsset {
+  id              String          @id @default(uuid())
+  originalUrl     String
+  thumbnailUrl    String?
+  durationMs      Int?
+  byteSize        BigInt
+  width           Int?
+  height          Int?
+  storageProvider StorageProvider @default(AWS_S3)
+  status          MediaStatus     @default(PROCESSING)
+  createdAt       DateTime        @default(now())
+  post            Post?
+}
+
+model Post {
+  id            String     @id @default(uuid())
+  type          MediaType
+  caption       String?    @db.VarChar(500)
+  authorId      String
+  author        User       @relation(fields: [authorId], references: [id])
+  mediaId       String     @unique
+  media         MediaAsset @relation(fields: [mediaId], references: [id])
+  likeCount     Int        @default(0)
+  commentCount  Int        @default(0)
+  isPublished   Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  deletedAt     DateTime?
+  comments      Comment[]
+  likes         Like[]
+
+  @@index([createdAt], map: "idx_post_created_at")
+  @@index([type, createdAt], map: "idx_post_type_created")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  editedAt  DateTime?
+  deletedAt DateTime?
+
+  @@index([postId, createdAt], map: "idx_comment_post_created")
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId], map: "uq_like_post_user")
+}
+
+model ActivityLog {
+  id        String        @id @default(uuid())
+  type      ActivityType
+  actorId   String
+  actor     User          @relation("ActorActivities", fields: [actorId], references: [id])
+  targetId  String?
+  metadata  Json?
+  createdAt DateTime      @default(now())
+
+  @@index([actorId, createdAt], map: "idx_activity_actor")
+}

@@ -1,0 +1,632 @@
+openapi: 3.1.0
+info:
+  title: HooChoo Family App API
+  version: 0.1.0
+  description: >-
+    가족 전용 고양이 "후추" 기록 서비스용 REST API. 모든 엔드포인트는 HTTPS, JWT 인증 기반.
+servers:
+  - url: https://api.hoochoo.app
+    description: Production (예시)
+  - url: https://staging.api.hoochoo.app
+    description: Staging
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+  - name: Invitations
+  - name: Posts
+  - name: Comments
+  - name: Likes
+  - name: Profile
+  - name: Memories
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: 이메일+비밀번호로 로그인하고 JWT 획득
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: 인증 실패
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: refresh token으로 access token 재발급
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: 재발급 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /invitations:
+    post:
+      tags: [Invitations]
+      summary: 관리자 초대 생성
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationCreateRequest'
+      responses:
+        '201':
+          description: 초대 생성
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+  /invitations/accept:
+    post:
+      tags: [Invitations]
+      summary: 초대 코드로 가입
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationAcceptRequest'
+      responses:
+        '201':
+          description: 가입 완료
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /posts:
+    get:
+      tags: [Posts]
+      summary: 최신순 피드 조회
+      parameters:
+        - in: query
+          name: cursor
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+            maximum: 30
+        - in: query
+          name: year
+          schema:
+            type: integer
+        - in: query
+          name: type
+          schema:
+            $ref: '#/components/schemas/PostType'
+      responses:
+        '200':
+          description: 피드 목록
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostListResponse'
+    post:
+      tags: [Posts]
+      summary: 새 포스트 업로드
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PostCreateRequest'
+      responses:
+        '201':
+          description: 포스트 생성
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+
+  /posts/{postId}:
+    get:
+      tags: [Posts]
+      summary: 포스트 상세
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '200':
+          description: 상세 정보
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostDetail'
+    patch:
+      tags: [Posts]
+      summary: 캡션/공개 여부 수정
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostUpdateRequest'
+      responses:
+        '200':
+          description: 수정 결과
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+    delete:
+      tags: [Posts]
+      summary: 포스트 삭제(작성자/관리자)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '204':
+          description: 삭제 완료
+
+  /posts/{postId}/comments:
+    get:
+      tags: [Comments]
+      summary: 댓글 목록
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+        - in: query
+          name: cursor
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 댓글 페이지
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentListResponse'
+    post:
+      tags: [Comments]
+      summary: 댓글 작성
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentCreateRequest'
+      responses:
+        '201':
+          description: 댓글 생성
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+
+  /comments/{commentId}:
+    patch:
+      tags: [Comments]
+      summary: 댓글 수정
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CommentId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentUpdateRequest'
+      responses:
+        '200':
+          description: 수정된 댓글
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+    delete:
+      tags: [Comments]
+      summary: 댓글 삭제
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/CommentId'
+      responses:
+        '204':
+          description: 삭제 완료
+
+  /posts/{postId}/like:
+    post:
+      tags: [Likes]
+      summary: 좋아요 추가
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '201':
+          description: 좋아요 완료
+    delete:
+      tags: [Likes]
+      summary: 좋아요 취소
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '204':
+          description: 취소 완료
+
+  /profile:
+    get:
+      tags: [Profile]
+      summary: 후추 프로필 정보
+      responses:
+        '200':
+          description: 프로필 데이터
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+    patch:
+      tags: [Profile]
+      summary: 프로필 업데이트 (관리자)
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdateRequest'
+      responses:
+        '200':
+          description: 수정된 프로필
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+
+  /memories/filter:
+    get:
+      tags: [Memories]
+      summary: 연도/타입별 요약 데이터
+      parameters:
+        - in: query
+          name: year
+          schema:
+            type: integer
+        - in: query
+          name: type
+          schema:
+            $ref: '#/components/schemas/PostType'
+      responses:
+        '200':
+          description: 필터 결과
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoriesFilterResponse'
+
+  /memories/today:
+    get:
+      tags: [Memories]
+      summary: "오늘의 후추" 랜덤 콘텐츠
+      responses:
+        '200':
+          description: 랜덤 포스트
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    PostId:
+      name: postId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    CommentId:
+      name: commentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+    RefreshTokenRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+    InvitationCreateRequest:
+      type: object
+      required: [role]
+      properties:
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [ADMIN, MEMBER]
+        expiresAt:
+          type: string
+          format: date-time
+    InvitationAcceptRequest:
+      type: object
+      required: [code, name, password]
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        password:
+          type: string
+        email:
+          type: string
+          format: email
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [ADMIN, MEMBER]
+        avatarUrl:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    Invitation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        email:
+          type: string
+          format: email
+          nullable: true
+        role:
+          type: string
+          enum: [ADMIN, MEMBER]
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        createdById:
+          type: string
+          format: uuid
+        acceptedUserId:
+          type: string
+          format: uuid
+          nullable: true
+    PostType:
+      type: string
+      enum: [IMAGE, VIDEO]
+    Post:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          $ref: '#/components/schemas/PostType'
+        caption:
+          type: string
+        media:
+          $ref: '#/components/schemas/MediaAsset'
+        author:
+          $ref: '#/components/schemas/Author'
+        likeCount:
+          type: integer
+        commentCount:
+          type: integer
+        isPublished:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    PostDetail:
+      allOf:
+        - $ref: '#/components/schemas/Post'
+        - type: object
+          properties:
+            comments:
+              items:
+                $ref: '#/components/schemas/Comment'
+              type: array
+    PostCreateRequest:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/PostType'
+        caption:
+          type: string
+          maxLength: 500
+        file:
+          type: string
+          format: binary
+    PostUpdateRequest:
+      type: object
+      properties:
+        caption:
+          type: string
+        isPublished:
+          type: boolean
+    PostListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+        nextCursor:
+          type: string
+          nullable: true
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+        postId:
+          type: string
+        author:
+          $ref: '#/components/schemas/Author'
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        editedAt:
+          type: string
+          format: date-time
+          nullable: true
+    CommentCreateRequest:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+          maxLength: 1000
+    CommentUpdateRequest:
+      type: object
+      properties:
+        content:
+          type: string
+    CommentListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+        nextCursor:
+          type: string
+          nullable: true
+    MediaAsset:
+      type: object
+      properties:
+        originalUrl:
+          type: string
+        thumbnailUrl:
+          type: string
+        width:
+          type: integer
+        height:
+          type: integer
+        durationMs:
+          type: integer
+          nullable: true
+    Author:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+    Profile:
+      type: object
+      properties:
+        name:
+          type: string
+        birthday:
+          type: string
+          format: date
+        bio:
+          type: string
+        avatarUrl:
+          type: string
+        familyMembers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Author'
+    ProfileUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        birthday:
+          type: string
+          format: date
+        bio:
+          type: string
+        avatarUrl:
+          type: string
+    MemoriesFilterResponse:
+      type: object
+      properties:
+        year:
+          type: integer
+        type:
+          $ref: '#/components/schemas/PostType'
+        count:
+          type: integer
+        samples:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
