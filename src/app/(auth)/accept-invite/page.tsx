@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -9,7 +9,7 @@ import api from '@/lib/api';
 import { setTokens, setUser } from '@/lib/auth';
 import type { AuthResponse } from '@/lib/types';
 
-export default function AcceptInvitePage() {
+function AcceptInviteForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const code = searchParams.get('code') || '';
@@ -147,5 +147,17 @@ export default function AcceptInvitePage() {
                 </Card>
             </div>
         </div>
+    );
+}
+
+export default function AcceptInvitePage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-lg">로딩 중...</div>
+            </div>
+        }>
+            <AcceptInviteForm />
+        </Suspense>
     );
 }
