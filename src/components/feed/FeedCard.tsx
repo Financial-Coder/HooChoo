@@ -5,6 +5,7 @@ import { Post, Comment, CommentListResponse } from '@/lib/types';
 import Card from '@/components/ui/Card';
 import { Heart, MessageCircle, Send, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
+import { getUser } from '@/lib/auth';
 
 interface FeedCardProps {
     post: Post;
@@ -31,16 +32,8 @@ export default function FeedCard({ post }: FeedCardProps) {
 
     // 현재 사용자 ID 가져오기
     useEffect(() => {
-        const getUserId = async () => {
-            try {
-                const response = await api.get('/auth/me');
-                setCurrentUserId(response.data.id);
-            } catch (error) {
-                // 로그인하지 않은 경우
-                setCurrentUserId(null);
-            }
-        };
-        getUserId();
+        const user = getUser();
+        setCurrentUserId(user?.id || null);
     }, []);
 
     // 댓글 토글
