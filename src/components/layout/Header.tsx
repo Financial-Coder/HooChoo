@@ -23,7 +23,9 @@ export default function Header() {
     };
 
     const handleLogoutConfirm = () => {
-        logout(() => router.push('/login'));
+        logout();
+        setShowLogoutDialog(false);
+        router.push('/login');
     };
 
     return (
