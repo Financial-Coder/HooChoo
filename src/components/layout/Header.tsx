@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { logout, getUser } from '@/lib/auth';
 import { User } from '@/lib/types';
 
 export default function Header() {
+    const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
@@ -13,9 +15,15 @@ export default function Header() {
         setUser(getUser());
     }, []);
 
-    const handleLogout = () => {
-        if (confirm('로그아웃 하시겠습니까?')) {
-            logout();
+    const handleLogout = (e: React.MouseEvent<HTMLButtonElement>) => {
+        console.log('[Header] Logout button clicked');
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('[Header] About to show confirm dialog');
+        const result = confirm('로그아웃 하시겠습니까?');
+        console.log('[Header] Confirm result:', result);
+        if (result) {
+            logout(() => router.push('/login'));
         }
     };
 
