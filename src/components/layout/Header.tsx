@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { logout, getUser } from '@/lib/auth';
 import { User } from '@/lib/types';
+import Button from '@/components/ui/Button';
 
 export default function Header() {
     const router = useRouter();
@@ -15,14 +16,8 @@ export default function Header() {
         setUser(getUser());
     }, []);
 
-    const handleLogout = (e: React.MouseEvent<HTMLButtonElement>) => {
-        console.log('[Header] Logout button clicked');
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('[Header] About to show confirm dialog');
-        const result = confirm('로그아웃 하시겠습니까?');
-        console.log('[Header] Confirm result:', result);
-        if (result) {
+    const handleLogout = () => {
+        if (window.confirm('로그아웃 하시겠습니까?')) {
             logout(() => router.push('/login'));
         }
     };
@@ -59,13 +54,15 @@ export default function Header() {
                                 </Link>
                             )}
 
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
+                                size="sm"
                                 onClick={handleLogout}
-                                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                                className="text-sm text-muted-foreground hover:text-foreground"
                             >
                                 로그아웃
-                            </button>
+                            </Button>
                         </>
                     )}
                 </div>

@@ -27,18 +27,8 @@ export default function PostManagementSection() {
         }
     };
 
-    const handleDelete = async (postId: string, e?: React.MouseEvent) => {
-        console.log('[PostManagement] Delete button clicked for post:', postId);
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        console.log('[PostManagement] About to show confirm dialog');
-        const result = confirm('정말로 이 포스트를 삭제하시겠습니까?');
-        console.log('[PostManagement] Confirm result:', result);
-
-        if (!result) {
+    const handleDelete = async (postId: string) => {
+        if (!window.confirm('정말로 이 포스트를 삭제하시겠습니까?')) {
             return;
         }
 
@@ -101,7 +91,7 @@ export default function PostManagementSection() {
                             </div>
                             <Button
                                 type="button"
-                                onClick={(e) => handleDelete(post.id, e)}
+                                onClick={() => handleDelete(post.id)}
                                 disabled={deleting === post.id}
                                 className="w-full bg-destructive hover:opacity-90 text-destructive-foreground transition-opacity"
                             >
